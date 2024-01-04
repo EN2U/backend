@@ -3,7 +3,7 @@ from functools import lru_cache
 
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.utils.translation import ugettext_lazy
+from django.utils.translation import gettext_lazy as _
 
 
 def generate_uuid4() -> str:
@@ -24,12 +24,12 @@ class CTModel(models.Model):
         abstract = True
 
 
-class XcelerateBaseModel(CTModel):
+class XcelerateCommonBaseModel(CTModel):
     updated_at = models.DateTimeField(
-        verbose_name=ugettext_lazy("Updated at"), auto_now_add=True, null=True
+        verbose_name=_("Updated at"), auto_now_add=True, null=True
     )
     created_at = models.DateTimeField(
-        verbose_name=ugettext_lazy("Created at"), auto_now=True, null=True
+        verbose_name=_("Created at"), auto_now=True, null=True
     )
 
     class Meta:
@@ -44,16 +44,20 @@ class XcelerateBaseModel(CTModel):
         super().save(*args, **kwargs)
 
 
-class XcelerateUUIDBaseModel(XcelerateBaseModel):
+class XcelerateUUIDBaseModel(XcelerateCommonBaseModel):
     uuid = models.CharField(
-        verbose_name=ugettext_lazy("UUID"), unique=True, default=generate_uuid4
+        verbose_name=_("UUID"),
+        editable=True,
+        unique=True,
+        default=generate_uuid4,
+        max_length=42,
     )
+
+    class Meta:
+        abstract = True
 
     def __hash__(self) -> int:
         return hash(self.uuid)
-
-    class meta:
-        abstract = True
 
     def __str__(self):
         return self.uuid
